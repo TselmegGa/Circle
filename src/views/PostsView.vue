@@ -14,10 +14,10 @@ export default {
       details: '',
       forumForm: {
         name: '',
-        details: '',
+        details: ''
       },
       postForm: {
-        details: '',
+        details: ''
       }
     };
   },
@@ -67,7 +67,7 @@ export default {
             <p class="mb-1">By: {{Forum.User.name}}</p>
             <div class="d-flex w-100 justify-content-between">
               <small class="text-muted">{{Forum.details}}</small>
-            <button class="btn bg-danger text-white" v-if="User.id == Forum.User.id" @click="forumEdit=!forumEdit">Edit</button>
+                <button class="btn bg-danger text-white" v-if="isLoggedIn && User.id == Forum.User.id" @click="forumEdit=!forumEdit">Edit</button>
             </div>
           </div>
           <form v-if="forumEdit" @submit.prevent="editForum">
@@ -86,7 +86,8 @@ export default {
             <h6 class="mb-1">{{post.details}}</h6>
             <small class="text-muted">{{post.date.replace('Z', '').replace('T', ' ')}}</small>
           </div>
-          <div v-if="User.id == post.User.id">
+          <p class="mb-1">By: {{post.User.name}}</p>
+          <div v-if="isLoggedIn && User.id == post.User.id">
             <h5>Edit a comment:</h5>
             <form @submit.prevent="editPost(post.id)">
               <div class="form-group">
