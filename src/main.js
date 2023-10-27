@@ -8,11 +8,11 @@ import axios from 'axios';
 
 const app = createApp(App);
 
-axios.defaults.baseURL = `https://localhost:8081/`;
+axios.defaults.baseURL = 'http://localhost:8081/';
 axios.defaults.headers =  {
     Accept: 'application/json',
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': 'https://localhost:3000',
+    'Access-Control-Allow-Origin': 'https://localhost:3001',
     'Access-Control-Allow-Methods': 'GET, PUT, POST',
     'Access-Control-Allow-Headers': 'Cache-Control, Pragma, Origin, Authorization, Content-Type, X-Requested-With',
     'Access-Control-Allow-Credentials':true
