@@ -5,19 +5,22 @@ import sha256 from 'crypto-js/sha256'
 import fs from 'fs';
 
 function checkHash(data, hashItem){
-    if(sha256(data) == hashItem){
+    if(sha256(data).toString() === hashItem){
         console.log('Hash valid');
         return true;
     }
     console.log('Hash invalid');
     return false;
 }
+
 const state = {
     user: null,
     forum: null,
     forums: null,
-    token: null
+    token: null,
+    key: null
 };
+
 const getters = {
     isAuthenticated: state => !!state.user,    
     StateForum: state => state.forum,
@@ -27,18 +30,22 @@ const getters = {
 };
 
 const actions = {
-    async Register({dispatch}, form) {
+    async Register({dispatch, commit}, form) {
+        
+        
         let response = await axios.post('auth/register', form);
-        if(checkHash(response.data.model, response.data.hash)){
-            await commit('setKey', response.data.model.privKey);
-            await dispatch('LogIn', form);
-        }else{
-            throw new Error('No Integrity');
-        }
+        await commit('setKey', response.data.model.privKey);
+        console.log(response);
+        
+            const data = JSON.stringify(response.data.model.privKey);
+            try { fs.writeFileSync('myfile.txt', data, 'utf-8'); }
+            catch(e) { console.log(e);}
+        
+        await dispatch('LogIn', form);
     },
     
-    async LogIn({commit}, User) {
-        let response = await axios.post('auth/login', User);
+    async LogIn({commit}, user) {
+        let response = await axios.post('auth/login', user);
         if(checkHash(response.data.model, response.data.hash)){
             await commit('setUser', response.data.model);
             await commit('setToken', response.data.jwt);
@@ -48,7 +55,7 @@ const actions = {
     },
     
     async CreatePost({dispatch}, post) {
-        await axios.post('post', post);
+        await axios.post('post', {post: post, hash: sha256(post).toString()});
         await dispatch('GetForum', post.ForumId);
     },
     
@@ -58,13 +65,8 @@ const actions = {
     },
     
     async GetForum({ commit }, id){
-        
         let response = await axios.get('view/forum/' + id);
-        if(checkHash(response.data.model, response.data.hash)){
-            await commit('setForum', response.data.model);
-        }else{
-            throw new Error('No Integrity');
-        }
+        await commit('setForum', response.data.model);
     },
     
     async CreateForum({dispatch}, forum) {
@@ -79,16 +81,12 @@ const actions = {
     
     async GetForums({ commit }){
         let response = await axios.get('view/forum');
-        if(checkHash(response.data.model, response.data.hash)){
-        commit('setForums', response.data.model);
-        }else{
-            throw new Error('No Integrity');
-        }
+        await commit('setForums', response.data.model);
     },
     
     async LogOut({commit}){
         let user = null;
-        commit('LogOut', user);
+        await commit('LogOut', user);
     }
 };
 const mutations = {
@@ -110,6 +108,10 @@ const mutations = {
     
     setKey(state, key){
         state.key = key;
+    },
+    
+    getKey(state){
+        return state.key;
     },
     
     LogOut(state){
